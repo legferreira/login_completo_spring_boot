@@ -4,6 +4,12 @@ Sistema de login com cadastro, autenticação e controle de acesso por perfil, e
 
 O projeto foi organizado de forma genérica para servir de base a outros sistemas, bastando acrescentar novas entidades e páginas sem alterar a lógica de autenticação.
 
+## Entrega do Dashboard Administrativo
+
+* [Documentação (PDF)](documento_e_video/Dashboard%20Thindesk.pdf)
+* [Vídeo de apresentação](documento_e_video/video-apresentacao.mp4)
+* [Adaptação para pizzaria](https://github.com/legferreira/pizzaria_dashboard_spring_boot)
+
 ## Funcionalidades
 
 * Cadastro de usuários com validação dos dados
