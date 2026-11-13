@@ -11,9 +11,10 @@ public class HomeController {
         return "home";
     }
 
-    @GetMapping("/gestor/painel")
-    public String painelGestor() {
-        return "gestor/painel";
+
+    @GetMapping("/gestor/dashboard")
+    public String dashboard() {
+        return "gestor/dashboard";
     }
 
     @GetMapping("/acesso-negado")

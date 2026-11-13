@@ -17,8 +17,9 @@
                         <a class="nav-link" th:href="@{/}">Início</a>
                     </li>
                     <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'GESTOR')">
-                        <a class="nav-link" th:href="@{/gestor/painel}">Painel do gestor</a>
+                        <a class="nav-link" th:href="@{/gestor/dashboard}">Painel do gestor</a>
                     </li>
+                  
                     <li class="nav-item" sec:authorize="hasRole('ADMIN')">
                         <a class="nav-link" th:href="@{/admin/usuarios}">Usuários</a>
                     </li>
