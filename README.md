@@ -1,6 +1,6 @@
-# Login Seguro
+# Login Seguro e Dashboard de Chamados
 
-Sistema de login com cadastro, autenticação e controle de acesso por perfil, feito com Java Spring Boot, Spring Security, Thymeleaf e MongoDB Atlas.
+Sistema de login com cadastro, autenticação e controle de acesso por perfil, evoluído com um dashboard administrativo de chamados técnicos. Feito com Java Spring Boot, Spring Security, Thymeleaf, Chart.js e MongoDB Atlas.
 
 O projeto foi organizado de forma genérica para servir de base a outros sistemas, bastando acrescentar novas entidades e páginas sem alterar a lógica de autenticação.
 
@@ -10,34 +10,91 @@ O projeto foi organizado de forma genérica para servir de base a outros sistema
 * Senhas armazenadas com hash BCrypt
 * Login e logout com Spring Security
 * Três perfis de acesso: `ADMIN`, `GESTOR` e `USUARIO`
-* Usuários e sessões armazenados no MongoDB Atlas
+* Usuários, sessões e chamados armazenados no MongoDB Atlas
 * Tema visual configurável
+* API REST de chamados e de indicadores
+* Dashboard com indicadores, gráficos, ranking e filtros
 
 ## Perfis e permissões
 
 | Página | Rota | USUARIO | GESTOR | ADMIN |
 |---|---|---|---|---|
 | Início | `/` | Sim | Sim | Sim |
-| Painel do gestor | `/gestor/painel` | Não | Sim | Sim |
+| Painel do gestor (dashboard) | `/gestor/dashboard` | Não | Sim | Sim |
 | Usuários | `/admin/usuarios` | Não | Não | Sim |
+| API | `/api/**` | Não | Sim | Sim |
 
 Todo usuário que se cadastra recebe o perfil `USUARIO`. O administrador pode alterar o perfil ou excluir usuários na página Usuários.
+
+## Dashboard de chamados
+
+O painel do gestor apresenta:
+
+* Indicadores gerais: total, abertos, em andamento, concluídos e tempo médio de atendimento
+* Gráfico de chamados atendidos por período
+* Gráfico da situação dos chamados
+* Ranking dos tipos de chamado mais atendidos
+* Tabela com os chamados e as observações técnicas
+* Filtros por período de abertura, status, tipo e técnico
+* Atualização pelo botão Atualizar e automática a cada minuto
+
+A página carrega os dados chamando a API por JavaScript.
+
+## API
+
+Todos os endpoints de consulta aceitam os filtros opcionais `inicio` e `fim` (data de abertura, formato `AAAA-MM-DD`), `status`, `tipo` e `tecnico`.
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | `/api/chamados` | Lista os chamados |
+| GET | `/api/chamados/{id}` | Busca um chamado |
+| POST | `/api/chamados` | Cadastra um chamado |
+| PUT | `/api/chamados/{id}` | Atualiza um chamado |
+| GET | `/api/dashboard/indicadores` | Indicadores gerais |
+| GET | `/api/dashboard/atendidos-por-periodo` | Chamados concluídos por data |
+| GET | `/api/dashboard/status` | Quantidade de chamados por status |
+| GET | `/api/dashboard/tipos` | Ranking dos tipos de chamado |
+
+Exemplo de corpo para cadastro:
+
+```json
+{
+  "descricao": "Computador não liga",
+  "status": "Aberto",
+  "tipo": "Manutenção",
+  "tecnico": "João",
+  "usuario": "Alberto"
+}
+```
+
+Possíveis erros:
+
+| Código | Quando acontece |
+|---|---|
+| 400 | Campo obrigatório vazio, JSON inválido ou data fora do formato |
+| 401 | Requisição sem autenticação |
+| 403 | Usuário sem perfil `GESTOR` ou `ADMIN` |
+| 404 | Chamado não encontrado |
+
+Fora do navegador (por exemplo, no Postman), a API aceita autenticação Basic com o e-mail e a senha de um usuário `GESTOR` ou `ADMIN`.
 
 ## Estrutura do projeto
 
 ```
 src/main/java/com/loginseguro
-├── config        Configurações (segurança, tema e administrador inicial)
-├── controller    Rotas e páginas
-├── entity        Usuario e Perfil
+├── config        Segurança, tema, administrador e chamados iniciais
+├── controller    Páginas e endpoints da API
+├── entity        Usuario, Perfil e Chamado
 ├── repository    Acesso ao MongoDB
-└── service       Regras de negócio e autenticação
+└── service       Regras de negócio, autenticação e indicadores
 
 src/main/resources
 ├── application.properties
-├── static/css
-│   ├── style.css         Estilos das páginas
-│   └── temas             Um arquivo de cores por tema
+├── static
+│   ├── css
+│   │   ├── style.css         Estilos das páginas
+│   │   └── temas             Um arquivo de cores por tema
+│   └── js/dashboard.js       Integração do dashboard com a API
 └── templates
     ├── fragments/layout.html   Cabeçalho e menu reaproveitados
     ├── login.html
@@ -45,7 +102,7 @@ src/main/resources
     ├── home.html
     ├── acesso-negado.html
     ├── admin/usuarios.html
-    └── gestor/painel.html
+    └── gestor/dashboard.html
 ```
 
 ## Pré-requisitos
@@ -62,6 +119,8 @@ Não é necessário instalar o Maven, o projeto já inclui o Maven Wrapper (`mvn
 2. Em **Database Access**, crie um usuário de banco com senha.
 3. Em **Network Access**, adicione o seu endereço IP.
 4. Em **Database > Connect > Drivers**, copie a string de conexão.
+
+Clusters gratuitos são pausados após um período sem uso. Se o sistema não conectar, confira no Atlas se o cluster está ativo e se o seu IP atual está liberado.
 
 ## Arquivo de configuração
 
@@ -96,14 +155,15 @@ Depois acesse http://localhost:8080 e entre com o e-mail e a senha do administra
 
 ## Integração com o MongoDB Atlas
 
-A conexão é configurada no `application.properties` pela propriedade `spring.data.mongodb.uri`, que recebe o valor de `MONGODB_URI`. O banco usado é o `loginseguro`, com duas coleções:
+A conexão é configurada no `application.properties` pela propriedade `spring.data.mongodb.uri`, que recebe o valor de `MONGODB_URI`. O banco usado é o `loginseguro`, com três coleções:
 
 | Coleção | Conteúdo | Quem grava |
 |---|---|---|
 | `usuarios` | Nome, e-mail, senha com hash e perfil | `UsuarioRepository` (Spring Data MongoDB) |
 | `sessoes` | Sessões dos usuários autenticados | Spring Session MongoDB |
+| `chamados` | Descrição, status, tipo, técnico, usuário, datas e observação técnica | `ChamadoRepository` (Spring Data MongoDB) |
 
-As coleções são criadas automaticamente na primeira execução. O campo `email` possui índice único.
+As coleções são criadas automaticamente na primeira execução. Se a coleção `chamados` estiver vazia, o sistema cadastra dois chamados de exemplo.
 
 ## Como trocar o tema
 
