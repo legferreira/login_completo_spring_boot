@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+    <body>
+        <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+        <main class="container mt-4 mb-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>Dashboard de chamados</h1>
+                <small>Atualizado às <span id="ultimaAtualizacao">--</span></small>
+            </div>
+
+            <form id="filtros" class="row g-2 mt-2 cartao-painel">
+                <div class="col-md-2">
+                    <label for="inicio" class="form-label">Abertura de</label>
+                    <input type="date" class="form-control" id="inicio" name="inicio">
+                </div>
+                <div class="col-md-2">
+                    <label for="fim" class="form-label">Até</label>
+                    <input type="date" class="form-control" id="fim" name="fim">
+                </div>
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos</option>
+                        <option>Aberto</option>
+                        <option>Em andamento</option>
+                        <option>Concluído</option>
+                        <option>Cancelado</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="tipo" class="form-label">Tipo</label>
+                    <input type="text" class="form-control" id="tipo" name="tipo">
+                </div>
+                <div class="col-md-2">
+                    <label for="tecnico" class="form-label">Técnico</label>
+                    <input type="text" class="form-control" id="tecnico" name="tecnico">
+                </div>
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-principal">Filtrar</button>
+                    <button type="button" class="btn btn-outline-secondary" id="limpar">Limpar</button>
+                </div>
+            </form>
+
+            <div id="mensagem" class="alert d-none mt-3"></div>
+
+            <div class="row g-3 mt-1">
+                <div class="col"><div class="cartao-painel indicador"><span>Total</span><strong id="total">0</strong></div></div>
+                <div class="col"><div class="cartao-painel indicador"><span>Abertos</span><strong id="abertos">0</strong></div></div>
+                <div class="col"><div class="cartao-painel indicador"><span>Em andamento</span><strong id="emAndamento">0</strong></div></div>
+                <div class="col"><div class="cartao-painel indicador"><span>Concluídos</span><strong id="concluidos">0</strong></div></div>
+                <div class="col"><div class="cartao-painel indicador"><span>Tempo médio (dias)</span><strong id="tempoMedioDias">0</strong></div></div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                    <div class="cartao-painel">
+                        <h5>Chamados atendidos por período</h5>
+                        <canvas id="graficoPeriodo"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="cartao-painel">
+                        <h5>Situação dos chamados</h5>
+                        <canvas id="graficoStatus"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="cartao-painel">
+                        <h5>Tipos mais atendidos</h5>
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Tipo</th><th>Chamados</th></tr></thead>
+                            <tbody id="rankingTipos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cartao-painel mt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Chamados</h5>
+                    <button type="button" class="btn btn-sm btn-principal" id="atualizar">Atualizar</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Status</th>
+                                <th>Tipo</th>
+                                <th>Técnico</th>
+                                <th>Usuário</th>
+                                <th>Abertura</th>
+                                <th>Conclusão</th>
+                                <th>Observação técnica</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaChamados"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+        <script th:src="@{/js/dashboard.js}"></script>
+    </body>
+</html>
